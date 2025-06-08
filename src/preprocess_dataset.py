@@ -5,13 +5,28 @@ from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 
 INPUT_DIR = "data/BinaryBrainTumorDataset"
-OUTPUT_DIR = "data/PreprocessedBinaryBrainTumorDataset"
-IMG_SIZE = (224, 224)
+OUTPUT_DIR = "data/PreprocessedBinaryBrainTumorDataset2"
+IMG_SIZE = (384, 384)
 ALLOWED_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.tiff'}
 
 def auto_crop(img):
     """Automatically removes the black border around the brain region."""
-    _, thresh = cv2.threshold(img, 10, 255, cv2.THRESH_BINARY)
+    # Convert to grayscale only for thresholding
+    if len(img.shape) == 3:
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = img
+    
+    # Apply Gaussian blur to reduce noise
+    gray = cv2.GaussianBlur(gray, (5, 5), 0)
+    
+    _, thresh = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)
+    
+    # Morphological operations to clean up
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+    thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
+    
     contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     if not contours:
@@ -19,29 +34,48 @@ def auto_crop(img):
     
     c = max(contours, key=cv2.contourArea)
     x, y, w, h = cv2.boundingRect(c)
+    
+    # Add padding
+    padding = 5
+    x = max(0, x - padding)
+    y = max(0, y - padding)
+    w = min(img.shape[1] - x, w + 2 * padding)
+    h = min(img.shape[0] - y, h + 2 * padding)
+    
     return img[y:y+h, x:x+w]
 
-def apply_clahe(img):
-    """Improved method for contrast enhancement using CLAHE."""
+def apply_clahe_rgb(img):
+    """Apply CLAHE to RGB image."""
+    # Convert to LAB color space
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    
+    # Apply CLAHE to L channel
     clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
-    return clahe.apply(img)
+    lab[:,:,0] = clahe.apply(lab[:,:,0])
+    
+    # Convert back to BGR
+    return cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
 
 def preprocess_image(img_path):
-    """Main function for preprocessing a single image."""
+    """Main function for preprocessing a single RGB image."""
     try:
-        # Load image
-        img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+        # Load RGB image
+        img = cv2.imread(img_path, cv2.IMREAD_COLOR)
         if img is None:
             raise ValueError(f"Cannot read image: {img_path}")
         
         # Apply all preprocessing steps
         img = auto_crop(img)
         img = cv2.resize(img, IMG_SIZE, interpolation=cv2.INTER_AREA)
-        img = apply_clahe(img)
+        img = apply_clahe_rgb(img)
         img = cv2.medianBlur(img, 3)
-        img = (img / 255.0).astype(np.float32)  # Normalize
+       
+       
+       
         
-        return (img * 255).astype(np.uint8)  # Convert back for saving
+        # Normalize to [0, 1] and convert back for saving
+        img = (img / 255.0).astype(np.float32)
+        return (img * 255).astype(np.uint8)
     
     except Exception as e:
         print(f"Error processing {img_path}: {str(e)}")
