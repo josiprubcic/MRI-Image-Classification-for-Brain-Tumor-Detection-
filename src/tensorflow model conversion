@@ -1,0 +1,4 @@
+import tensorflow as tf
+
+model = tf.keras.models.load_model("src/best_resnet_brain_model.keras")
+model.save("src/best_resnet_brain_model.h5")
