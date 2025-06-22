@@ -53,12 +53,4 @@ if __name__ == "__main__":
     merge_tumor_classes(data_path)
     print("Binary dataset created at data/BinaryBrainTumorDataset")
     
-    # Print statistics
-    binary_dataset_path = os.path.join(data_path, "BinaryBrainTumorDataset")
-    for split in ['Training', 'Testing']:
-        print(f"\n{split} set:")
-        for category in ['yes', 'no']:
-            category_path = os.path.join(binary_dataset_path, split, category)
-            if os.path.exists(category_path):
-                count = len([f for f in os.listdir(category_path) if os.path.isfile(os.path.join(category_path, f))])
-                print(f"  - {category}: {count} images")
+  
