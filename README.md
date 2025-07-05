@@ -28,12 +28,13 @@ Instalacija svih potrebnih paketa:
 pip install -r requirements.txt
 ```
 
-## Priprema podataka
-Podaci su sadržani na GitHubu, no ukoliko želite sami obaviti pripremu podataka ovo su koraci:
+## Priprema podataka 
 
-1. Preuzmite dataset **Brain Tumor MRI Dataset** i raspakirajte ga u `data/BrainTumorMRIDataset/`.
-2. Pomoću skripte merging_scipt.py u /src putanji pretvorite podatke iz `data/BrainTumorMRIDataset/` u `data/BinaryBrainTumorDataset/`
-3. Provjerite da struktura direktorija odgovara putanjama u bilježnicama (npr. `data/BinaryBrainTumorDataset/Training/yes`, `no`).
+
+1. Preuzmite dataset [Brain Tumor MRI Dataset](https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset/data) i raspakirajte ga u `data/BrainTumorMRIDataset/`.
+
+
+## Korištenje
 
 ## Korištenje
 
@@ -65,7 +66,12 @@ jupyter notebook
 ```
 ili otvorite `.ipynb` datoteke u Visual Studio Code.
 
-### 5. Pokretanje treniranja modela
+### 5. Priprema podataka
+
+1. Pomoću skripte `merging_scipt.py` iz `/src` pretvorite podatke iz `data/BrainTumorMRIDataset/` u `data/BinaryBrainTumorDataset/`
+2. Provjerite da struktura direktorija odgovara putanjama u bilježnicama (npr. `data/BinaryBrainTumorDataset/Training/yes`, `no`).
+
+### 6. Pokretanje treniranja modela
 
 - Otvorite željenu bilježnicu iz `notebooks/` (npr. `training_resnet.ipynb`, `training_5fold.ipynb`, `training_knn_hog_glcm.ipynb`, `training_svm_hog_glcm.ipynb`)
 - Prilagodite putanje do podataka ako je potrebno
